@@ -1,5 +1,5 @@
 const {verifyToken} = require("../middleware/authJwt")
-const {secret, db} = require('../config')
+const {db} = require('../config')
 const { MongoClient } = require("mongodb");
 const uri = db;
 const client = new MongoClient(uri);

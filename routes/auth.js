@@ -49,10 +49,9 @@ module.exports = (app) => {
             if (!passwordIsValid) {
                 return res.status(500).send({error: "Invalid credentials"});
             }
+            var token = jwt.sign({ id: user._id }, secret,{});
 
-            var token = jwt.sign({ id: user.id }, secret,{});
-
-            res.send({ token: token, id: user._id })
+            res.send({ token: token, userId: user._id })
 
         } catch (error) {
             res.send({ message: error })
