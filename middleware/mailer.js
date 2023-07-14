@@ -1,12 +1,12 @@
 var nodemailer = require('nodemailer');
-const { appURL } = require('../config')
+const { appName, emailResetURL } = require('../config')
 const dotenv = require('dotenv');
 dotenv.config();
 
 const sendEMail = async (email,code,userId) =>{
     try{
         let transporter = nodemailer.createTransport({
-            service: 'gmail',
+            service: process.env.EMAIL_SERVICE,
             auth: {
                 user: process.env.EMAIL_ADDRESS,
                 pass: process.env.EMAIL_PASSWORD
@@ -15,12 +15,12 @@ const sendEMail = async (email,code,userId) =>{
 
         let mailOptions = {
             from: {
-                name:'Polstart',
+                name: appName,
                 address: process.env.EMAIL_ADDRESS
             },
             to: email,
-            subject: "Reset Polstart Password",
-            html: `Here is the code to reset your password: <a href="`+appURL+'/reset/'+userId+'/' + code+'">Reset</a>',
+            subject: "Reset " + appName+ " Password",
+            html: `Here is the code to reset your password: <a href="`+emailResetURL+userId+'/' + code+'">Reset</a>',
         };
 
         await transporter.sendMail(mailOptions, function (error, info) {

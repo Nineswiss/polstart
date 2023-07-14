@@ -1,23 +1,26 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { v4: uuid_v4 } = require('uuid');
-const { secret, db } = require('../config')
+const { secret, db, databaseName } = require('../config')
 const sendEMail = require("../middleware/mailer")
+var validator = require("email-validator");
 const { MongoClient,ObjectId } = require("mongodb");
 const uri = db;
 const client = new MongoClient(uri);
-const databaseName ='polstart'
 
 module.exports = (app) => {
 
     app.post('/signup', async function (req, res, next) {
+        if(!validator.validate(req.body.email)){
+            return res.status(409).send({ message: "Invalid Email" })
+        }
         try {
             const database = client.db(databaseName);
             const users = database.collection('users');
             const user = await users.findOne({ email: req.body.email });
 
             if (user) {
-                return res.send({ message: "User Exists" })
+                return res.status(400).send({ message: "User Exists" })
             }
 
             const newUser = await users.insertOne({
@@ -25,23 +28,22 @@ module.exports = (app) => {
                 password: bcrypt.hashSync(req.body.password, 8)
             })
 
-            res.send(newUser)
+            res.status(200).send(newUser)
 
         } catch (error) {
-            res.send({ message: error })
+            res.status(500).send({ message: error })
         }
     });
 
 
     app.post('/signin', async function (req, res, next) {
-
         try {
             const database = client.db(databaseName);
             const users = database.collection('users');
             const user = await users.findOne({ email: req.body.email });
             
             if (!user) {
-                return res.send({ message: "Invalid credentials" })
+                return res.status(401).send({ message: "Invalid credentials" })
             }
 
             const passwordIsValid = bcrypt.compareSync(
@@ -50,14 +52,14 @@ module.exports = (app) => {
             );
 
             if (!passwordIsValid) {
-                return res.status(500).send({error: "Invalid credentials"});
+                return res.status(401).send({error: "Invalid credentials"});
             }
             var token = jwt.sign({ id: user._id }, secret,{});
 
-            res.send({ token: token, userId: user._id })
+            res.status(200).send({ token: token, userId: user._id })
 
         } catch (error) {
-            res.send({ message: error })
+            res.status(500).send({ message: error })
         }
 
     });
@@ -70,7 +72,7 @@ module.exports = (app) => {
             const user = await users.findOne({ email: req.body.email });
             
             if (!user) {
-                return res.send({ message: "Invalid credentials" })
+                return res.status(401).send({ message: "Invalid credentials" })
             }
 
             let resetCode = uuid_v4()
@@ -83,12 +85,10 @@ module.exports = (app) => {
 
             const result = await users.updateOne({_id:user._id}, updateDoc, { upsert: true })
             await sendEMail(user.email,resetCode,user._id)
-            res.send({ message: "Check your email"})
+            res.status(200).send({ message: "Check your email"})
 
         } catch (error) {
-            console.log("error");
-            console.log(error);
-            res.send({ message: error })
+            res.status(500).send({ message: error })
         }
 
     });
@@ -102,20 +102,18 @@ module.exports = (app) => {
             const user = await users.findOne({ _id: new ObjectId(userId) });
             
             if (!user) {
-                return res.send({ message: "Invalid link" })
+                return res.status(400).send({ message: "Invalid link" })
             }
 
             if(user.resetCode===code){
-                //send reset code when updating
-                res.send({ message: "Code matches! You can reset."})
+                //send reset code when updating ? or get from URL
+                res.status(200).send({ message: "Code matches! You can reset."})
             }else{
-                res.send({ message: "Invalid link"})
+                res.status(404).send({ message: "Invalid link"})
             }
 
         } catch (error) {
-            console.log("error");
-            console.log(error);
-            res.send({ message: error })
+            res.status(500).send({ message: error })
         }
     });
 
@@ -136,15 +134,15 @@ module.exports = (app) => {
                 };
     
                 const result = await users.updateOne({_id: new ObjectId(req.body.id)}, updateDoc, { upsert: true })
-                res.send({ message: "Updated" })
+                res.status(200).send({ message: "Updated" })
             }
             else{
-                res.send({error: "Couldn't update"})
+                res.status(409).send({error: "Couldn't update"})
             }
   
 
         } catch (error) {
-            res.send({ message: error })
+            res.status(500).send({ message: error })
         }
     });
 
