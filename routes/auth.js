@@ -7,6 +7,7 @@ var Users = require("../models/users.model");
 
 module.exports = (app) => {
 
+
     app.post('/signup', async (req, res, next) => {
         let user = await Users.exists({
             email: req.body.email
@@ -25,20 +26,6 @@ module.exports = (app) => {
         }
         await verifyEmail(req.body.email,verfiyCode,newUser._id)
         res.status(200).send({message:'User Created'})
-    });
-
-    app.post('/sendVerification', async (req, res, next) => {
-
-        let user = await Users.findOne({
-            email: req.body.email
-        },'_id, verificationCode')
-        if(!user){return res.status(404).send({ message: "User not found" })}
-        if(!user.verificationCode){
-           return  res.status(200).send({message:'User already verified'})
-        }
-        console.log(user.verificationCode);
-        await verifyEmail(req.body.email,user.verificationCode,user._id)
-        res.status(200).send({message:'Email sent'})
     });
 
 
@@ -60,10 +47,10 @@ module.exports = (app) => {
         }
         var token = jwt.sign({ id: user._id }, secret,{});
         res.status(200).send({ token: token, userId: user._id })
-
     });
 
-    /// NEED TO BE ABLE TO RESEND VERIFICATION EMAIL WITH NEW CODE
+
+
     app.get('/verfiy/:id/:code', async (req, res, next) =>{
         let user = await Users.findOneAndUpdate({
             _id: req.params.id,
@@ -81,6 +68,21 @@ module.exports = (app) => {
         }
     })
 
+    app.post('/sendVerification', async (req, res, next) => {
+
+        let user = await Users.findOne({
+            email: req.body.email
+        },'_id, verificationCode')
+        if(!user){return res.status(404).send({ message: "User not found" })}
+        if(!user.verificationCode){
+           return  res.status(200).send({message:'User already verified'})
+        }
+        await verifyEmail(req.body.email,user.verificationCode,user._id)
+        res.status(200).send({message:'Email sent'})
+    });
+
+
+
     app.post('/reset', async (req, res, next) =>{
 
         let newResetCode = uuid_v4()
@@ -97,6 +99,8 @@ module.exports = (app) => {
 
     });
 
+
+
     app.get('/reset/:id/:code', async (req, res, next) =>{
         const user = await Users.findOne({ _id: req.params.id });
         if (!user) {return res.status(400).send({ message: "Invalid link" })}
@@ -106,6 +110,7 @@ module.exports = (app) => {
             res.status(404).send({ message: "Invalid link"})
         }
     });
+
 
 
     app.post('/updatePassword/', async (req, res, next)=> {
@@ -122,5 +127,7 @@ module.exports = (app) => {
         if (!user) {return res.status(401).send({ message: "Invalid credentials" })}
         res.status(200).send({ message: "Updated" })
     });
+
+    
 
 }
