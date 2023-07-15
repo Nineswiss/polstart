@@ -60,8 +60,10 @@ module.exports = (app) => {
         const user = await Users.findOneAndUpdate({email:req.body.email},{
             magicLink:linkCode
         })
+        ///should expire?
         await magicEmail(req.body.email,linkCode,user._id)
         res.status(200).send({ message:"Link Sent!" })
+    
     });
 
 
@@ -99,7 +101,7 @@ module.exports = (app) => {
         }
         )
         if(user){
-            res.send({message:'Verfied!'})
+            res.status(200).send({message:'Verfied!'})
         }else{
             return res.status(401).send({ message: "Invalid credentials" })
         }
