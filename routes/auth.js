@@ -1,149 +1,91 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { v4: uuid_v4 } = require('uuid');
-const { secret, db, databaseName } = require('../config')
+const { secret } = require('../config')
 const sendEMail = require("../middleware/mailer")
-var validator = require("email-validator");
-const { MongoClient,ObjectId } = require("mongodb");
-const uri = db;
-const client = new MongoClient(uri);
+var Users = require("../models/users.model");
 
 module.exports = (app) => {
 
-    app.post('/signup', async function (req, res, next) {
-        if(!validator.validate(req.body.email)){
-            return res.status(409).send({ message: "Invalid Email" })
+    app.post('/signup', async (req, res, next) => {
+
+        let user = await Users.exists({
+            email: req.body.email
+        })
+        if(user){return res.status(400).send({ message: "User Exists" })}
+        const newUser = await Users.create({
+            email:req.body.email,
+            password: bcrypt.hashSync(req.body.password, 8)
+        })
+        if(!newUser){
+            res.status(500).send({ error: 'Something went wrong' })
         }
-        try {
-            const database = client.db(databaseName);
-            const users = database.collection('users');
-            const user = await users.findOne({ email: req.body.email });
+        res.status(200).send(newUser)
 
-            if (user) {
-                return res.status(400).send({ message: "User Exists" })
-            }
-
-            const newUser = await users.insertOne({
-                email: req.body.email,
-                password: bcrypt.hashSync(req.body.password, 8)
-            })
-
-            res.status(200).send(newUser)
-
-        } catch (error) {
-            res.status(500).send({ message: error })
-        }
     });
 
 
-    app.post('/signin', async function (req, res, next) {
-        try {
-            const database = client.db(databaseName);
-            const users = database.collection('users');
-            const user = await users.findOne({ email: req.body.email });
-            
-            if (!user) {
-                return res.status(401).send({ message: "Invalid credentials" })
-            }
+    app.post('/signin', async  (req, res, next)=> {
 
-            const passwordIsValid = bcrypt.compareSync(
-                req.body.password,
-                user.password
+        const user = await Users.findOne({
+            email: req.body.email
+        })
+        if (!user) {return res.status(401).send({ message: "Invalid credentials" })}
+   
+        const passwordIsValid = bcrypt.compareSync(
+            req.body.password,
+            user.password
+        );
+
+        if (!passwordIsValid) {return res.status(401).send({error: "Invalid credentials"});}
+        var token = jwt.sign({ id: user._id }, secret,{});
+        res.status(200).send({ token: token, userId: user._id })
+
+    });
+
+    app.post('/reset', async (req, res, next) =>{
+
+        let newResetCode = uuid_v4()
+        const user = await Users.findOneAndUpdate(
+            { email: req.body.email },
+            {
+                resetCode: newResetCode
+            },
+            { returnOriginal: false}
             );
-
-            if (!passwordIsValid) {
-                return res.status(401).send({error: "Invalid credentials"});
-            }
-            var token = jwt.sign({ id: user._id }, secret,{});
-
-            res.status(200).send({ token: token, userId: user._id })
-
-        } catch (error) {
-            res.status(500).send({ message: error })
-        }
+        if (!user) {return res.status(401).send({ message: "Invalid credentials" })}
+        await sendEMail(user.email,newResetCode,user._id)
+        res.status(200).send({ message: "Check your email"})
 
     });
 
-    app.post('/reset', async function (req, res, next) {
+    app.get('/reset/:id/:code', async (req, res, next) =>{
 
-        try {
-            const database = client.db(databaseName);
-            const users = database.collection('users');
-            const user = await users.findOne({ email: req.body.email });
-            
-            if (!user) {
-                return res.status(401).send({ message: "Invalid credentials" })
-            }
-
-            let resetCode = uuid_v4()
-
-            const updateDoc ={
-                $set: {
-                  resetCode: resetCode
-                },
-            };
-
-            const result = await users.updateOne({_id:user._id}, updateDoc, { upsert: true })
-            await sendEMail(user.email,resetCode,user._id)
-            res.status(200).send({ message: "Check your email"})
-
-        } catch (error) {
-            res.status(500).send({ message: error })
-        }
-
-    });
-
-    app.get('/reset/:id/:code', async function (req, res, next) {
-        let code = req.params.code
-        let userId = req.params.id
-        try {
-            const database = client.db(databaseName);
-            const users = database.collection('users');
-            const user = await users.findOne({ _id: new ObjectId(userId) });
-            
-            if (!user) {
-                return res.status(400).send({ message: "Invalid link" })
-            }
-
-            if(user.resetCode===code){
-                //send reset code when updating ? or get from URL
-                res.status(200).send({ message: "Code matches! You can reset."})
-            }else{
-                res.status(404).send({ message: "Invalid link"})
-            }
-
-        } catch (error) {
-            res.status(500).send({ message: error })
+        const user = await Users.findOne({ _id: req.params.id });
+        if (!user) {return res.status(400).send({ message: "Invalid link" })}
+        if(user.resetCode===req.params.code){
+            //send reset code when updating ? or get from URL
+            res.status(200).send({ message: "Code matches! You can reset."})
+        }else{
+            res.status(404).send({ message: "Invalid link"})
         }
     });
 
 
-    app.post('/updatePassword/', async function (req, res, next) {
-        console.log(req.body.id);
-        try {
-            const database = client.db(databaseName);
-            const users = database.collection('users');
-            const user = await users.findOne({ _id: new ObjectId(req.body.id), resetCode:req.body.code });
-
-            if (user) {
-                const updateDoc ={
-                    $set: {
-                      resetCode: '',
-                      password: bcrypt.hashSync(req.body.password, 8)
-                    },
-                };
-    
-                const result = await users.updateOne({_id: new ObjectId(req.body.id)}, updateDoc, { upsert: true })
-                res.status(200).send({ message: "Updated" })
-            }
-            else{
-                res.status(409).send({error: "Couldn't update"})
-            }
-  
-
-        } catch (error) {
-            res.status(500).send({ message: error })
-        }
+    app.post('/updatePassword/', async (req, res, next)=> {
+        const user = await Users.findOneAndUpdate(
+            { 
+                _id: req.body.id, 
+                resetCode:req.body.code 
+            },
+            {
+                resetCode: '',
+                password: bcrypt.hashSync(req.body.password, 8)
+            },
+            { returnOriginal: false}
+            );
+        if (!user) {return res.status(401).send({ message: "Invalid credentials" })}
+        res.status(200).send({ message: "Updated" })
     });
 
 }
