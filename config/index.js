@@ -4,6 +4,7 @@ const databaseName = 'polstart'
 const appURL = "http://localhost:8080"
 const emailResetURL = "http://localhost:8080/reset/"
 const verfiyURL = "http://localhost:8080/verfiy/"
+const magicLinkSignin = "http://localhost:8080/magic-signin/"
 const appName = 'Polstart'
 
 module.exports = {
@@ -13,5 +14,6 @@ module.exports = {
     databaseName,
     appName,
     emailResetURL,
-    verfiyURL
+    verfiyURL,
+    magicLinkSignin
 }

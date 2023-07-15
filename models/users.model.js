@@ -7,7 +7,8 @@ var users = mongoose.Schema({
     verificationCode: {type:String},
     resetCode: {type:String },
     lastLogin:{type:Date},
+    magicLink:{type:String},
     role:{type:String, default:'user'}
 },{timestamps: true })
 
-module.exports = mongoose.model('users', users);
+module.exports = mongoose.model('Users', users);

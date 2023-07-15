@@ -25,7 +25,7 @@ module.exports = (app) => {
     if(!req.userId){
       return res.status(401).send({message:" Unauthorized"})
     }
-    let user = await Users.findById(req.userId,'email _id')
+    let user = await Users.findById(req.userId,'email _id role')
     if(!user){return res.status(500).send({error:'User not found'})}
     res.status(200).send(user)
   });

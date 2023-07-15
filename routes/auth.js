@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { v4: uuid_v4 } = require('uuid');
 const { secret } = require('../config')
-const {resetEmail,verifyEmail} = require("../middleware/mailer")
+const {resetEmail,verifyEmail,magicEmail} = require("../middleware/mailer")
 var Users = require("../models/users.model");
 
 module.exports = (app) => {
@@ -52,6 +52,36 @@ module.exports = (app) => {
         var token = jwt.sign({ id: user._id}, secret,{});
         res.status(200).send({ token: token, userId: user._id })
     });
+
+    app.post('/magic-link', async  (req, res)=> {
+        const linkCode = uuid_v4()
+        const user = await Users.findOneAndUpdate({email:req.body.email},{
+            magicLink:linkCode
+        })
+        await magicEmail(req.body.email,linkCode,user._id)
+        res.status(200).send({ message:"Link Sent!" })
+    });
+
+
+    app.post('/magic-signin/:id/:code', async  (req, res)=> {
+        const user = await Users.findOne({
+            _id: req.params.id,
+            magicLink:req.params.code
+        })
+        if (!user) {return res.status(401).send({ message: "Invalid credentials" })}
+
+        if(!user.verified){
+            return res.status(401).send({ message: "Not Verfified" })
+        }
+
+        await Users.findOneAndUpdate({_id:user._id},{
+            lastLogin:Date.now(),
+            magicLink:''
+        })
+        var token = jwt.sign({ id: user._id}, secret,{});
+        res.status(200).send({ token: token, userId: user._id })
+    });
+
 
 
 
