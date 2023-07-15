@@ -41,7 +41,7 @@ module.exports = (app) => {
             user.password
         );
 
-        if (!passwordIsValid) {return res.status(401).send({error: "Invalid credentials"});}
+        if (!passwordIsValid) {return res.status(401).send({error: "Invalid credentials"})}
         if(!user.verified){
             return res.status(401).send({ message: "Not Verfified" })
         }
@@ -49,8 +49,10 @@ module.exports = (app) => {
         await Users.findOneAndUpdate({_id:user._id},{
             lastLogin:Date.now()
         })
-        var token = jwt.sign({ id: user._id}, secret,{});
+
+        var token = jwt.sign({ id: user._id}, secret,{})
         res.status(200).send({ token: token, userId: user._id })
+
     });
 
     app.post('/magic-link', async  (req, res)=> {
@@ -63,7 +65,8 @@ module.exports = (app) => {
     });
 
 
-    app.post('/magic-signin/:id/:code', async  (req, res)=> {
+
+    app.get('/magic-signin/:id/:code', async  (req, res)=> {
         const user = await Users.findOne({
             _id: req.params.id,
             magicLink:req.params.code
