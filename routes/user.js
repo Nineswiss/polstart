@@ -6,8 +6,12 @@ module.exports = (app) => {
   //GET ALL USERS IF ADMIN
   app.get('/users',[verifyToken], async (req, res) => {
 
-    if(req.role!=='admin'){return res.status(401).send({message:" Unauthorized"})}
+    if(!req.userId){return res.status(401).send({message:" Unauthorized"})}
 
+    let user = await Users.findById(req.userId)
+    if(user.role!== 'admin'){
+      return res.status(401).send({message:" Unauthorized"})
+    }
     let users = await Users.find({},
       'email'
     )

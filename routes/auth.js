@@ -8,7 +8,7 @@ var Users = require("../models/users.model");
 module.exports = (app) => {
 
 
-    app.post('/signup', async (req, res, next) => {
+    app.post('/signup', async (req, res) => {
         let user = await Users.exists({
             email: req.body.email
         })
@@ -30,7 +30,7 @@ module.exports = (app) => {
 
 
 
-    app.post('/signin', async  (req, res, next)=> {
+    app.post('/signin', async  (req, res)=> {
         const user = await Users.findOne({
             email: req.body.email
         })
@@ -45,16 +45,17 @@ module.exports = (app) => {
         if(!user.verified){
             return res.status(401).send({ message: "Not Verfified" })
         }
-        var token = jwt.sign({ id: user._id, role:user.role }, secret,{});
+
         await Users.findOneAndUpdate({_id:user._id},{
             lastLogin:Date.now()
         })
+        var token = jwt.sign({ id: user._id}, secret,{});
         res.status(200).send({ token: token, userId: user._id })
     });
 
 
 
-    app.get('/verfiy/:id/:code', async (req, res, next) =>{
+    app.get('/verfiy/:id/:code', async (req, res) =>{
         let user = await Users.findOneAndUpdate({
             _id: req.params.id,
             verificationCode: req.params.code
@@ -73,7 +74,7 @@ module.exports = (app) => {
 
 
     
-    app.post('/sendVerification', async (req, res, next) => {
+    app.post('/sendVerification', async (req, res) => {
 
         let user = await Users.findOne({
             email: req.body.email
