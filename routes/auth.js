@@ -19,19 +19,31 @@ module.exports = (app) => {
             email:req.body.email,
             password: bcrypt.hashSync(req.body.password, 8),
             verificationCode: verfiyCode
-        }
-        )
+        })
         if(!newUser){
             res.status(500).send({ error: 'Something went wrong' })
         }
-        console.log(newUser);
         await verifyEmail(req.body.email,verfiyCode,newUser._id)
         res.status(200).send({message:'User Created'})
     });
 
+    app.post('/sendVerification', async (req, res, next) => {
+
+        let user = await Users.findOne({
+            email: req.body.email
+        },'_id, verificationCode')
+        if(!user){return res.status(404).send({ message: "User not found" })}
+        if(!user.verificationCode){
+           return  res.status(200).send({message:'User already verified'})
+        }
+        console.log(user.verificationCode);
+        await verifyEmail(req.body.email,user.verificationCode,user._id)
+        res.status(200).send({message:'Email sent'})
+    });
+
+
 
     app.post('/signin', async  (req, res, next)=> {
-
         const user = await Users.findOne({
             email: req.body.email
         })
@@ -50,7 +62,6 @@ module.exports = (app) => {
         res.status(200).send({ token: token, userId: user._id })
 
     });
-
 
     /// NEED TO BE ABLE TO RESEND VERIFICATION EMAIL WITH NEW CODE
     app.get('/verfiy/:id/:code', async (req, res, next) =>{
@@ -87,12 +98,10 @@ module.exports = (app) => {
     });
 
     app.get('/reset/:id/:code', async (req, res, next) =>{
-
         const user = await Users.findOne({ _id: req.params.id });
         if (!user) {return res.status(400).send({ message: "Invalid link" })}
         if(user.resetCode===req.params.code){
-            //send reset code when updating ? or get from URL
-            res.status(200).send({ message: "Code matches! You can reset."})
+            res.status(200).send({ message: "Code matches! You can reset.", code: user.resetCode})
         }else{
             res.status(404).send({ message: "Invalid link"})
         }
