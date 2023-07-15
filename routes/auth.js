@@ -45,7 +45,7 @@ module.exports = (app) => {
         if(!user.verified){
             return res.status(401).send({ message: "Not Verfified" })
         }
-        var token = jwt.sign({ id: user._id }, secret,{});
+        var token = jwt.sign({ id: user._id, role:user.role }, secret,{});
         res.status(200).send({ token: token, userId: user._id })
     });
 
@@ -68,6 +68,8 @@ module.exports = (app) => {
         }
     })
 
+
+    
     app.post('/sendVerification', async (req, res, next) => {
 
         let user = await Users.findOne({

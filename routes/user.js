@@ -4,7 +4,10 @@ var Users = require("../models/users.model");
 module.exports = (app) => {
 
   //GET ALL USERS
-  app.get('/users', async function (req, res) {
+  app.get('/users',[verifyToken], async function (req, res) {
+    if(req.role!=='admin'){
+      return res.status(401).send({message:" Unauthorized"})
+    }
     let users = await Users.find({}
       ,'email')
     if(!users){res.status(500).send({error:'No users'})}
@@ -36,5 +39,6 @@ module.exports = (app) => {
     }
     res.send("Trying to delete user:  " + req.userId)
   });
+
 
 }

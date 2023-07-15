@@ -5,7 +5,8 @@ var users = mongoose.Schema({
     password: {type:String , required: true},
     verified:{type:Boolean, default:false},
     verificationCode: {type:String},
-    resetCode: {type:String }
+    resetCode: {type:String },
+    role:{type:String, default:'user'}
 },{timestamps: true })
 
 module.exports = mongoose.model('users', users);
