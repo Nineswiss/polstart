@@ -6,6 +6,7 @@ var users = mongoose.Schema({
     verified:{type:Boolean, default:false},
     verificationCode: {type:String},
     resetCode: {type:String },
+    lastLogin:{type:Date},
     role:{type:String, default:'user'}
 },{timestamps: true })
 

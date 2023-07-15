@@ -46,6 +46,9 @@ module.exports = (app) => {
             return res.status(401).send({ message: "Not Verfified" })
         }
         var token = jwt.sign({ id: user._id, role:user.role }, secret,{});
+        await Users.findOneAndUpdate({_id:user._id},{
+            lastLogin:Date.now()
+        })
         res.status(200).send({ token: token, userId: user._id })
     });
 

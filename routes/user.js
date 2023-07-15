@@ -3,19 +3,21 @@ var Users = require("../models/users.model");
 
 module.exports = (app) => {
 
-  //GET ALL USERS
-  app.get('/users',[verifyToken], async function (req, res) {
-    if(req.role!=='admin'){
-      return res.status(401).send({message:" Unauthorized"})
-    }
-    let users = await Users.find({}
-      ,'email')
+  //GET ALL USERS IF ADMIN
+  app.get('/users',[verifyToken], async (req, res) => {
+
+    if(req.role!=='admin'){return res.status(401).send({message:" Unauthorized"})}
+
+    let users = await Users.find({},
+      'email'
+    )
     if(!users){res.status(500).send({error:'No users'})}
     res.status(200).send(users)
+
   });
 
   //GET LOGGED IN USER
-  app.get('/user',[verifyToken], async function (req, res) {
+  app.get('/user',[verifyToken], async (req, res) => {
     if(!req.userId){
       return res.status(401).send({message:" Unauthorized"})
     }
@@ -25,7 +27,7 @@ module.exports = (app) => {
   });
 
   //UPDATE LOGGED IN USER
-  app.put('/user',[verifyToken], function (req, res) {
+  app.put('/user',[verifyToken], (req, res) => {
     if(!req.userId){
       return res.status(401).send({message:" Unauthorized"})
     }
@@ -33,7 +35,7 @@ module.exports = (app) => {
   });
 
   // DELETE USER
-  app.delete('/user',[verifyToken], function (req, res) {
+  app.delete('/user',[verifyToken], (req, res) => {
     if(!req.userId){
       return res.status(401).send({message:" Unauthorized"})
     }
