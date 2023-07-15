@@ -2,26 +2,31 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { v4: uuid_v4 } = require('uuid');
 const { secret } = require('../config')
-const sendEMail = require("../middleware/mailer")
+const {resetEmail,verifyEmail} = require("../middleware/mailer")
 var Users = require("../models/users.model");
 
 module.exports = (app) => {
 
     app.post('/signup', async (req, res, next) => {
-
         let user = await Users.exists({
             email: req.body.email
         })
         if(user){return res.status(400).send({ message: "User Exists" })}
+
+        let verfiyCode = uuid_v4()
+
         const newUser = await Users.create({
             email:req.body.email,
-            password: bcrypt.hashSync(req.body.password, 8)
-        })
+            password: bcrypt.hashSync(req.body.password, 8),
+            verificationCode: verfiyCode
+        }
+        )
         if(!newUser){
             res.status(500).send({ error: 'Something went wrong' })
         }
-        res.status(200).send(newUser)
-
+        console.log(newUser);
+        await verifyEmail(req.body.email,verfiyCode,newUser._id)
+        res.status(200).send({message:'User Created'})
     });
 
 
@@ -31,17 +36,39 @@ module.exports = (app) => {
             email: req.body.email
         })
         if (!user) {return res.status(401).send({ message: "Invalid credentials" })}
-   
+        
         const passwordIsValid = bcrypt.compareSync(
             req.body.password,
             user.password
         );
 
         if (!passwordIsValid) {return res.status(401).send({error: "Invalid credentials"});}
+        if(!user.verified){
+            return res.status(401).send({ message: "Not Verfified" })
+        }
         var token = jwt.sign({ id: user._id }, secret,{});
         res.status(200).send({ token: token, userId: user._id })
 
     });
+
+
+    /// NEED TO BE ABLE TO RESEND VERIFICATION EMAIL WITH NEW CODE
+    app.get('/verfiy/:id/:code', async (req, res, next) =>{
+        let user = await Users.findOneAndUpdate({
+            _id: req.params.id,
+            verificationCode: req.params.code
+        },
+        {
+            verified: true,
+            verificationCode:''
+        }
+        )
+        if(user){
+            res.send({message:'Verfied!'})
+        }else{
+            return res.status(401).send({ message: "Invalid credentials" })
+        }
+    })
 
     app.post('/reset', async (req, res, next) =>{
 
@@ -50,11 +77,11 @@ module.exports = (app) => {
             { email: req.body.email },
             {
                 resetCode: newResetCode
-            },
-            { returnOriginal: false}
+            }
             );
         if (!user) {return res.status(401).send({ message: "Invalid credentials" })}
-        await sendEMail(user.email,newResetCode,user._id)
+     
+        await resetEmail(user.email,newResetCode,user._id)
         res.status(200).send({ message: "Check your email"})
 
     });
@@ -81,8 +108,7 @@ module.exports = (app) => {
             {
                 resetCode: '',
                 password: bcrypt.hashSync(req.body.password, 8)
-            },
-            { returnOriginal: false}
+            }
             );
         if (!user) {return res.status(401).send({ message: "Invalid credentials" })}
         res.status(200).send({ message: "Updated" })
