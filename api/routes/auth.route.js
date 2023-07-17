@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { v4: uuid_v4 } = require('uuid');
-const { secret } = require('../config')
+const { jwtSecret } = require('../config')
 const {resetEmail,verifyEmail,magicEmail} = require("../middleware/mailer")
 var Users = require("../models/users.model");
 
@@ -50,7 +50,7 @@ module.exports = (app) => {
             lastLogin:Date.now()
         })
 
-        var token = jwt.sign({ id: user._id}, secret,{})
+        var token = jwt.sign({ id: user._id}, jwtSecret,{})
         res.status(200).send({ token: token, userId: user._id })
 
     });
@@ -83,7 +83,7 @@ module.exports = (app) => {
             lastLogin:Date.now(),
             magicLink:''
         })
-        var token = jwt.sign({ id: user._id}, secret,{});
+        var token = jwt.sign({ id: user._id}, jwtSecret,{});
         res.status(200).send({ token: token, userId: user._id })
     });
 
