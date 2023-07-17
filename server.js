@@ -1,10 +1,17 @@
 const bodyParser = require("body-parser")
 const express = require('express')
 const mongoose = require("mongoose");
+const cors = require("cors");
 const { db, databaseName } = require('./config')
 
 const serverPort=8080
 const app = express()
+
+var corsOptions = {
+    origin: ["http://localhost:3000","http://localhost:3030"]
+  };
+  
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 require('./routes')(app);
 

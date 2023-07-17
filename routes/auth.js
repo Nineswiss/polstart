@@ -29,8 +29,8 @@ module.exports = (app) => {
     });
 
 
-
     app.post('/signin', async  (req, res)=> {
+        
         const user = await Users.findOne({
             email: req.body.email
         })
