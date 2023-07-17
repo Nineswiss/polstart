@@ -12,6 +12,16 @@ mongodb
    
 ```npm i```  
   
+  create a '.env' file in '/api  
+  in **.env**:    
+  EMAIL_ADDRESS=your email provider address 
+  EMAIL_PASSWORD=your email password   
+  EMAIL_SERVICE=your email service ie 'gmail'
+    
+  In /api/config/index.js  
+  Set up your database and App info
+
+
   ...then to run:  
   ```npm start```  
   or even better:  
