@@ -154,7 +154,7 @@ module.exports = (app) => {
 
 
 
-    app.post('/updatePassword/', async (req, res, next)=> {
+    app.post('/updatePassword', async (req, res, next)=> {
         const user = await Users.findOneAndUpdate(
             { 
                 _id: req.body.id, 

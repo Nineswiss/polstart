@@ -3,16 +3,45 @@
 
  Edit config/index.js to edit your JWT key and mongo db connection  
    
- **Get Started**  
- In the polstart folder:  
+## Prerequisites
+node  
+mongodb
+
+ ## Get Started
+```cd polstart/api```  
    
 ```npm i```  
   
-  ...then to run  
+  ...then to run:  
   ```npm start```  
+  or even better:  
+   ```nodemon```
     
+
+## Endpoints
+
 Sign In endpoint:  
 ```http://localhost:8080/signin```  
   
 Sign Up endpoint:  
 ```http://localhost:8080/signup```
+
+  
+Verify endpoint:  
+```http://localhost:8080/verfiy/:id/:code```
+
+  
+Resend Verify endpoint:  
+```http://localhost:8080/sendVerification```
+
+  
+Reset password endpoint:  
+```http://localhost:8080/reset```
+
+  
+Validate Reset password endpoint:  
+```http://localhost:8080/reset/:id/:code```
+
+  
+Update password endpoint:  
+```http://localhost:8080/updatePassword```

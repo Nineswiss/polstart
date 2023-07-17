@@ -1,13 +1,13 @@
 {
-  "name": "mearner",
+  "name": "polstart",
   "version": "1.0.0",
-  "description": "mkdir mearner npm init",
+  "description": "A basic node, express and mongodb auth api",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
-  "author": "",
+  "author": "Adam Boal",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
