@@ -55,6 +55,7 @@ module.exports = (app) => {
 
     });
 
+
     app.post('/magic-link', async  (req, res)=> {
         const linkCode = uuid_v4()
         const user = await Users.findOneAndUpdate({email:req.body.email},{
