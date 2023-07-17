@@ -41,7 +41,7 @@ module.exports = (app) => {
             user.password
         );
 
-        if (!passwordIsValid) {return res.status(401).send({error: "Invalid credentials"})}
+        if (!passwordIsValid) {return res.status(401).send({message: "Invalid credentials"})}
         if(!user.verified){
             return res.status(401).send({ message: "Not Verfified" })
         }
