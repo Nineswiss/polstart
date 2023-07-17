@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const {secret} = require('../config')
+const {jwtSecret} = require('../config')
 
 verifyToken = (req, res, next) => {
 
@@ -9,7 +9,7 @@ verifyToken = (req, res, next) => {
         return res.status(403).send({ message: "Not logged in" });
     }
 
-    jwt.verify(token, secret, (err, decoded) => {
+    jwt.verify(token, jwtSecret, (err, decoded) => {
         if (err) {
             return res.status(401).send({ message: "Unauthorized!" });
         }
