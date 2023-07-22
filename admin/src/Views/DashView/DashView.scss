@@ -53,9 +53,7 @@
         border-collapse: collapse;
         border-radius: global.$border-radius;
         font-size: 14px;
-        td,th{
-            text-align: left;
-        }
+      
         td{
             padding: 0 10px 0 0 ;
         }
@@ -66,14 +64,19 @@
             height: 30px;
             input[type=text], select{
                 height: 30px;
+                border: none;
+                border-bottom: 1px solid global.$medium-grey;
+                border-left: 1px solid global.$medium-grey;
+                border-right: 1px solid global.$medium-grey;
             }
         }
         th{
             background-color: global.$darkest;
             color: white;
             padding: 10px;
-            font-size: 12px;
+            font-size: 11px;
             text-transform: uppercase;
+            text-align: left;
             
         }
         .schemaRow{

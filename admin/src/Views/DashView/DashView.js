@@ -15,7 +15,7 @@ export default function DashView() {
         async function getCollections() {
             let collections = await axios.get('http://localhost:8081/schemas')
             if (collections) {
-                setCollections(collections.data) 
+                setCollections(collections.data)
             }
         }
         getCollections()
@@ -23,7 +23,7 @@ export default function DashView() {
     }, []);
 
     useEffect(() => {
-        if(collections.length>0){
+        if (collections.length > 0) {
             readCollection(collections[0].name)
         }
     }, [collections]);
@@ -34,35 +34,33 @@ export default function DashView() {
         const schema = holdCollection.schema[0]
         const updatedObject = {};
         Object.keys(schema).forEach((key, index) => {
-          const item = schema[key];
-          updatedObject[key] = {
-            ...item,
-            id: uuidv4() 
-          };
+            const item = schema[key];
+            updatedObject[key] = {
+                ...item,
+                id: uuidv4()
+            };
         });
         setSchema(updatedObject)
         setTimestamp(holdCollection.schema[1].timestamps.toString())
     }
 
 
-    function updateReq(name){
-        let tempSchema = {...schema}
-        tempSchema[name].required= !tempSchema[name].required ? true : !tempSchema[name].required
+    function updateReq(name) {
+        let tempSchema = { ...schema }
+        tempSchema[name].required = !tempSchema[name].required ? true : !tempSchema[name].required
         setSchema(tempSchema)
     }
 
-    function updateType(value,name){
-        let tempSchema = {...schema}
-        tempSchema[name].type=value
+    function updateType(value, name) {
+        let tempSchema = { ...schema }
+        tempSchema[name].type = value
         setSchema(tempSchema)
     }
 
-    function updateName(e,id){
-
-        let tempSchema = {...schema}
+    function updateName(e, id) {
+        let tempSchema = { ...schema }
         const updatedKey = e.target.value;
         const entryIndex = findEntryIndexById(tempSchema, id);
-
         const entries = Object.entries(tempSchema);
         const [key, value] = entries[entryIndex];
         const updatedEntries = [
@@ -71,36 +69,35 @@ export default function DashView() {
             ...entries.slice(entryIndex + 1)
         ];
         const updatedObject = Object.fromEntries(updatedEntries);
-
         setSchema(updatedObject)
     }
 
     const findEntryIndexById = (obj, targetId) => {
         const entries = Object.entries(obj);
         for (let i = 0; i < entries.length; i++) {
-          const [key, value] = entries[i];
-          if (value.id === targetId) {
-            return i; // Return the index of the matching entry
-          }
+            const [key, value] = entries[i];
+            if (value.id === targetId) {
+                return i; // Return the index of the matching entry
+            }
         }
         return -1; // If no matching entry is found
-      };
+    };
 
 
-    function updateDefault(e,name){
-        let tempSchema = {...schema}
+    function updateDefault(e, name) {
+        let tempSchema = { ...schema }
         tempSchema[name].default = e.target.value
         setSchema(tempSchema)
     }
 
-    async function save(){
+    async function save() {
         const updatedObject = {};
         Object.keys(schema).forEach(key => {
-          const { id, ...itemWithoutId } = schema[key];
-          updatedObject[key] = itemWithoutId;
+            const { id, ...itemWithoutId } = schema[key];
+            updatedObject[key] = itemWithoutId;
         });
 
-        let finalModel=[
+        let finalModel = [
             updatedObject,
             {
                 "timestamps": timestamp
@@ -110,52 +107,48 @@ export default function DashView() {
         console.log(finalModel);
     }
 
-    function addRow(){
+    function addRow() {
         let newName = prompt("Name")
-        if(!newName){return}
+        if (!newName) { return }
         let exists = schema[newName]
-        if(exists){
+        if (exists) {
             alert("Name must be unique")
             return
         }
-        let tempSchema = {...schema}
+        let tempSchema = { ...schema }
         const newRow = {
-            name:{
-            type: 'String',
-            required:false,
-            default:''
-        }}
+            name: {
+                type: 'String',
+                required: false,
+                default: '',
+                id: uuidv4()
+            }
+        }
         newRow[newName] = newRow.name;
         delete newRow.name;
-        Object.assign(tempSchema,newRow)
+        Object.assign(tempSchema, newRow)
         console.log(tempSchema);
         setSchema(tempSchema)
     }
 
-    function deleteRow(name){
+    function deleteRow(name) {
         let ask = window.confirm("Are you sure you wnat to delete: " + name)
-        if(!ask){return}
-
-        let tempSchema = {...schema}
+        if (!ask) { return }
+        let tempSchema = { ...schema }
         delete tempSchema[name]
         setSchema(tempSchema)
     }
 
-    // useEffect(() => {
-    //     console.log('scheama updated');
-    // }, [schema]);
-
-
     return (
         <div className="mainView collectionView">
             <div className="collectionList">
-               <div className="heading"> 
-                     <Stack size={16} color="#1E2024" weight="bold" />
+                <div className="heading">
+                    <Stack size={16} color="#1E2024" weight="bold" />
                     <h3>Collections</h3>
-               </div>
+                </div>
                 {collections.map((collection, index) => {
                     return (
-                        <div className="buttonWrapper" key={'nav'+index}>
+                        <div className="buttonWrapper" key={'nav' + index}>
                             <button key={'collection' + index} className={schemaName === collection.name ? 'activeCollection' : ''} onClick={() => readCollection(collection.name)}>{collection.name}</button>
                         </div>
                     )
@@ -163,52 +156,52 @@ export default function DashView() {
             </div>
 
             <div className="schemaInfo">
-            <h3>{schemaName}</h3>
-            {Object.keys(schema).length>0 &&
-                <div>
-                <table><thead><tr>
-                    <th>Name</th>
-                    <th>Type</th>
-                    <th>Required</th>
-                    <th>Default</th>
-                    <th></th>
-                </tr></thead>
-                <tbody>
-                    { Object.entries(schema).map(([property, attributes],index) => (
-                       
-                        <tr className="schemaRow" key={attributes.id}>
-                            <td>
-                                <input defaultValue={property} onChange={(e)=>updateName(e,attributes.id)} type="text"/>
-                            </td>
-                            <td>
-                            <select value={attributes.type} onChange={(e)=>updateType(e.target.value,property)}>
-                                <option value="String">String</option>
-                                <option value="Number">Number</option>
-                                <option value="Date">Date</option>
-                                <option value="Buffer">Buffer</option>
-                                <option value="Boolean">Boolean</option>
-                                <option value="Mixed">Mixed</option>
-                                <option value="ObjectId">ObjectId</option>
-                                <option value="Array">Array</option>
-                                <option value="Decimal128">Decimal128</option>
-                                <option value="Map">Map</option>
-                                <option value="Schema">Schema</option>
-                                <option value="UUID">UUID</option>
-                                <option value="BigInt">BigInt</option>
-                            </select>
-                            </td>
-                            <td><input type="checkbox" checked={attributes.required ? attributes.required : false} onChange={()=>updateReq(property)}/></td>
-                            <td> <input defaultValue={attributes.default} onChange={(e)=>updateDefault(e,property)}  type="text"/></td>
-                            <td><button onClick={()=>deleteRow(property)}>Delete</button></td>
-                        </tr>
-                        
-                   ))}
-                </tbody></table>
-                <div>Timestamps:{timestamp}</div>
-               </div> 
-            }
-            <button onClick={()=>addRow()}>Add Row</button>
-            <button onClick={()=>save()}>Update</button>
+                <h3>{schemaName}</h3>
+                {Object.keys(schema).length > 0 &&
+                    <div>
+                        <table><thead><tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Required</th>
+                            <th>Default</th>
+                            <th></th>
+                        </tr></thead>
+                            <tbody>
+                                {Object.entries(schema).map(([property, attributes], index) => (
+
+                                    <tr className="schemaRow" key={attributes.id}>
+                                        <td>
+                                            <input defaultValue={property} onChange={(e) => updateName(e, attributes.id)} type="text" />
+                                        </td>
+                                        <td>
+                                            <select value={attributes.type} onChange={(e) => updateType(e.target.value, property)}>
+                                                <option value="String">String</option>
+                                                <option value="Number">Number</option>
+                                                <option value="Date">Date</option>
+                                                <option value="Buffer">Buffer</option>
+                                                <option value="Boolean">Boolean</option>
+                                                <option value="Mixed">Mixed</option>
+                                                <option value="ObjectId">ObjectId</option>
+                                                <option value="Array">Array</option>
+                                                <option value="Decimal128">Decimal128</option>
+                                                <option value="Map">Map</option>
+                                                <option value="Schema">Schema</option>
+                                                <option value="UUID">UUID</option>
+                                                <option value="BigInt">BigInt</option>
+                                            </select>
+                                        </td>
+                                        <td align="center"><input type="checkbox" checked={attributes.required ? attributes.required : false} onChange={() => updateReq(property)} /></td>
+                                        <td> <input defaultValue={attributes.default} onChange={(e) => updateDefault(e, property)} type="text" /></td>
+                                        <td><button onClick={() => deleteRow(property)}>Delete</button></td>
+                                    </tr>
+
+                                ))}
+                            </tbody></table>
+                        <div>Timestamps:{timestamp}</div>
+                    </div>
+                }
+                <button onClick={() => addRow()}>Add Row</button>
+                <button onClick={() => save()}>Update</button>
             </div>
         </div>
     );
