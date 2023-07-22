@@ -56,8 +56,17 @@
         td,th{
             text-align: left;
         }
+        td{
+            padding: 0 10px 0 0 ;
+        }
         thead{
             
+        }
+        tr{
+            height: 30px;
+            input[type=text], select{
+                height: 30px;
+            }
         }
         th{
             background-color: global.$darkest;
