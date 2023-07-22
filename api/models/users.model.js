@@ -1,15 +1,9 @@
 var mongoose = require('mongoose');
+const schemaNew = require('./users.schema.json')
 
-var users = mongoose.Schema({
-    email: { type: String, required: true , index: true, unique: true },
-    password: { type: String, required: true },
-    verified: { type: Boolean, default: false },
-    verificationCode: { type: String },
-    authType:{type: String, default:'email'},
-    resetCode: { type: String },
-    lastLogin: { type: Date },
-    magicLink: { type: String },
-    role: { type: String, default: 'user' }
-}, { timestamps: true })
+var users = mongoose.Schema
+(
+    schemaNew[0]
+)
 
 module.exports = mongoose.model('Users', users);

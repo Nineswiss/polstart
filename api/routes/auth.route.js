@@ -24,7 +24,7 @@ module.exports = (app) => {
         if(!newUser){
             res.status(500).send({ error: 'Something went wrong' })
         }
-        await verifyEmail(req.body.email,verfiyCode,newUser._id)
+        // await verifyEmail(req.body.email,verfiyCode,newUser._id)
         res.status(200).send({message:'User Created'})
     });
 

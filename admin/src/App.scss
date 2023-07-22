@@ -1,0 +1,31 @@
+@use './global/global' as global;
+.App {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  color: global.$darkest;
+}
+nav{
+  height: 100vh;
+  background-color: global.$darkest;
+  color: white;
+  display: flex;
+  justify-content: center;
+  padding-top: 80px;
+  .navLink{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 12px;
+    text-transform: uppercase;
+    gap: 10px;
+    cursor: pointer;
+  }
+}
+.mainView{
+  background-color: global.$light-grey;
+}
+h3{
+  font-size: 14px;
+  text-transform: uppercase;
+}
+

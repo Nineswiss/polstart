@@ -1,0 +1,74 @@
+@use '../../global/global' as global;
+.collectionView{
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 20px;
+}
+
+.collectionList{
+    height: 100vh;
+    background-color: white;
+    border-right: 1px solid global.$medium-grey;
+
+    .heading{
+        position: relative;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        padding-left: 20px;
+        border-bottom: 1px solid global.$medium-grey;
+        h3{
+            padding: 0 0 0 10px;
+            margin: 0;
+            font-size: 12px;
+        }
+    }
+  
+    .buttonWrapper{
+        border-bottom: 1px solid global.$medium-grey;
+        height: 50px;
+        display: flex;
+        align-items: center;
+    }
+    button{
+        height: 50px;
+        outline: none;
+        width: 100%;
+        background-color: transparent;
+        padding: 0 20px;
+        border: none;
+        text-align: left;
+        cursor: pointer;
+    }
+    .activeCollection, button:hover{
+        transition: all global.$speed-fast;
+        background-color: global.$light-grey;
+        border-radius: global.$border-radius;
+    }
+}
+
+.schemaInfo{
+    padding: 20px;
+    table{
+        border-collapse: collapse;
+        border-radius: global.$border-radius;
+        font-size: 14px;
+        td,th{
+            text-align: left;
+        }
+        thead{
+            
+        }
+        th{
+            background-color: global.$darkest;
+            color: white;
+            padding: 10px;
+            font-size: 12px;
+            text-transform: uppercase;
+            
+        }
+        .schemaRow{
+            padding: 10px;
+        }
+    }
+}

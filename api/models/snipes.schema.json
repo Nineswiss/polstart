@@ -1,0 +1,21 @@
+[
+  {
+    "groupName": {
+      "type": "String",
+      "required": true,
+      "unique": true
+    },
+    "owner": {
+      "type": "String",
+      "required": true
+    },
+    "timer": {
+      "type": "Date",
+      "default": "Date.Now"
+    }
+  },
+  {
+    "timestamps": true
+  }
+]
+

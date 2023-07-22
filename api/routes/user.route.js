@@ -1,6 +1,7 @@
 const {verifyToken} = require("../middleware/authJwt")
 var Users = require("../models/users.model");
 
+
 module.exports = (app) => {
 
   //GET ALL USERS IF ADMIN
@@ -17,6 +18,7 @@ module.exports = (app) => {
       'email'
     )
     if(!users){res.status(500).send({error:'No users'})}
+    
     res.status(200).send(users)
 
   });

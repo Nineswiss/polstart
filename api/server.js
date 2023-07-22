@@ -24,5 +24,5 @@ connection.once("open", function() {
 });
 
 app.listen(serverPort, () => {
-    console.log("listening to port " + serverPort);
+    console.log("Listening to port " + serverPort);
 });
